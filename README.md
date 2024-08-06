@@ -1,1 +1,1 @@
-# pos-ner
+# Named Entity Recognition (NER) and Parts of Speech (POS) tagging.
