@@ -26,15 +26,16 @@ async def get_prediction(payload: PredictionPayload):
             data_path=env.str("DATA_PATH"),
             max_len=env.int("MAX_LEN")
         )
-        sentence = payload.get("sentence")
+        sentence = payload.sentence
         results = model.predict(sentence)
+        logger.info(f"Results: {results}")
     except Exception as e:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
     else:
-        return [result.model_dumps() for result in results]
+        return [result.model_dump() for result in results]
 
 
-@app.get("/healthz", status_code=status.HTTP_200_OK)
+@app.get("/healthcheck", status_code=status.HTTP_200_OK)
 async def health_check():
     return {"status": "ok"}

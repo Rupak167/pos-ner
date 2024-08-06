@@ -5,7 +5,10 @@ import pandas as pd
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-from domain.models import Result
+from domain.models import Result, Token
+
+from utils import get_logger
+logger = get_logger(__name__)
 
 class NER_POS_Prediction:
     def __init__(self, model_path, data_path, max_len):
@@ -28,7 +31,7 @@ class NER_POS_Prediction:
         padded_sequence = pad_sequences([word_indices], maxlen=self.max_len, padding='post', value=len(self.word2idx) - 1)
         return padded_sequence
     
-    def predict(self, sentence):
+    def predict(self, sentence) -> list[Token]:
         words = sentence.strip().split()
         words = [self.clean_token(word) for word in words]
 
@@ -45,12 +48,13 @@ class NER_POS_Prediction:
         result = []
         for word, pos, ner in zip(words, pos_tags[:len(sentence.split())], ner_tags[:len(sentence.split())]):
             result.append(
-                Result(
-                    token=word,
-                    pos_tag=pos,
-                    ner_tag=ner
+                Token(
+                    Token=word,
+                    POS_Tag=pos,
+                    NER_Tag=ner
                 )
             )
+        logger.info(f"Result in the prediction side: {result}")
         return result
 
     def load_dictionaries(self):
