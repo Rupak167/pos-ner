@@ -141,5 +141,5 @@ class NER_POS_Trainer:
 if __name__ == "__main__":
     model_path = env.str('MODEL_PATH', None)
     data_path = env.str('DATA_PATH', None)
-    trainer = NER_POS_Trainer(data_path= data_path, max_len=50, batch_size=64, epochs=20)
+    trainer = NER_POS_Trainer(data_path= data_path, max_len=50, batch_size=64, epochs=100)
     trainer.run(model_path=model_path)
