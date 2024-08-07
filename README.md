@@ -48,14 +48,14 @@ python test.py
 
 ## 1. Run the API
 ```shell
-uvicorn application:app --workers 2 --host 0.0.0.0 --port 8080
+uvicorn application:app --workers 2 --host 0.0.0.0 --port 8000
 ```
 ## 2. Open a API testing app like Postman and set
 
 ## Endpoint
 
 ```shell
-http://0.0.0.0:8080/predict
+http://0.0.0.0:8000/predict
 ```
 ## Payload
 ```shell
@@ -69,7 +69,7 @@ http://0.0.0.0:8080/predict
 
 ## 1. Make a GET request
 ```shell
-http://0.0.0.0:8080/healthcheck
+http://0.0.0.0:8000/healthcheck
 ```
 
 # To run using docker

@@ -22,7 +22,7 @@ class NER_POS_Inference:
     def preprocess_sentence(self, sentence):
         words = sentence.strip().split()
         words = [self.clean_token(word) for word in words]
-        word_indices = [self.word2idx.get(word, 0) for word in words]  # 0 if word is not found in the word2idx dictionary
+        word_indices = [self.word2idx.get(word, 0) for word in words]
         padded_sequence = pad_sequences([word_indices], maxlen=self.max_len, padding='post', value=len(self.word2idx) - 1)
         return padded_sequence
     
