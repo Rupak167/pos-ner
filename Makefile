@@ -12,3 +12,9 @@ train:
 
 test:
 	python test.py
+
+prepare-onnx:
+	python prepare_onnx_model.py
+
+infer-onnx:
+	python inference_onnx_model.py

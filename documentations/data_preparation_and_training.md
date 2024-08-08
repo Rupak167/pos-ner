@@ -1,3 +1,36 @@
+# Detailed Documentation of the Code
+## Overview
+The provided code trains a Named Entity Recognition (NER) and Part-of-Speech (POS) tagging model using a BiLSTM architecture. The dataset contains tokens, their respective POS tags, and NER tags. The model is trained to predict both POS and NER tags for given sentences.
+## Dataset Format
+The dataset is structured with sentences and their corresponding tokens, POS tags, and NER tags:
+
+```
+sentence_1
+token_1 pos_tag ner_tag
+token_2 pos_tag ner_tag
+token_3 pos_tag ner_tag
+
+sentence_2
+token_1 pos_tag ner_tag
+token_2 pos_tag ner_tag
+token_3 pos_tag ner_tag
+```
+
+### Data format after data peocessing
+```
+token   pos_tag   ner_tag   sentence_id
+
+token_1 pos_tag_1 ner_tag_1 sentence_id_1
+token_2 pos_tag_2 ner_tag_2 sentence_id_1
+token_3 pos_tag_3 ner_tag_3 sentence_id_1
+token_4 pos_tag_4 ner_tag_4 sentence_id_2
+token_5 pos_tag_5 ner_tag_5 sentence_id_2
+```
+
+## Data Preprocessing and Training Script
+### Importing Required Libraries
+
+```python
 import re
 import os
 import pandas as pd
@@ -9,10 +42,12 @@ from tensorflow.keras import Model, Input
 from tensorflow.keras.layers import LSTM, Embedding, Dense, TimeDistributed, SpatialDropout1D, Bidirectional
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
+```
 
-env = Env()
-env.read_env()
-
+### NER_POS_Trainer Class
+This class handles the entire pipeline from loading data to training the model.
+#### Initialization
+```python
 class NER_POS_Trainer:
     def __init__(self, data_path, max_len, batch_size, epochs):
         self.data_path = data_path
@@ -20,15 +55,23 @@ class NER_POS_Trainer:
         self.batch_size = batch_size
         self.epochs = epochs
         self.model = None
-        
+```
+
+### Clean Token 
+Removes unwanted characters from tokens.
+```python
     def clean_token(self, token):
         unwanted_chars = r"[()'\",|?]"
         return re.sub(unwanted_chars, '', token)
+```
 
+### Load and Preprocess Data
+Loads the dataset, processes tokens, and creates mappings for words, POS tags, and NER tags.
+```python
     def load_and_preprocess_data(self):
         column_names = ['token', 'pos_tag', 'ner_tag', 'sentence_id']
-        data = pd.read_csv(self.data_path, delimiter='\t', quoting=3, names=column_names, encoding='utf-8')
-
+        data = pd.read_csv(self.data_path, delimiter='\t', quoting=3,
+                names=column_names, encoding='utf-8')
         data['sentence_id'] = (data['token'].isnull().cumsum())
         data['token'] = data['token'].str.strip()
         data['pos_tag'] = data['pos_tag'].str.strip()
@@ -51,12 +94,20 @@ class NER_POS_Trainer:
         self.ner2idx = {n: i for i, n in enumerate(ner_tags)}
 
         return data
+```
 
+### Get Sentences 
+Groups tokens by sentences.
+```python
     def get_sentences(self, data):
-        agg_func = lambda s: [(w, p, t) for w, p, t in zip(s['token'].tolist(), s['pos_tag'].tolist(), s['ner_tag'].tolist())]
+        agg_func = lambda s: [(w, p, t) for w, p, t in  zip(s['token'].tolist(),s['pos_tag'].tolist(),s['ner_tag'].tolist())]
         grouped = data.groupby("sentence_id").apply(agg_func)
         return [s for s in grouped]
+```
 
+### Prepare Data 
+Prepares data for training by converting tokens to indices and padding sequences.
+```python
     def prepare_data(self, sentences):
         print("Preparing data...")
         X = [[self.word2idx[w[0]] for w in s] for s in sentences]
@@ -71,7 +122,21 @@ class NER_POS_Trainer:
         y_ner = [to_categorical(i, num_classes=self.num_ner_tags) for i in y_ner]
 
         return X, y_pos, y_ner
+```
 
+### Model Architecture
+The model uses a BiLSTM (Bidirectional Long Short-Term Memory) architecture. LSTMs are suitable for sequential data and can capture long-term dependencies. By using bidirectional LSTMs, the model can access both past and future context, improving its performance on sequence tagging tasks like NER and POS tagging.
+### Training and Evaluation
+#### The training process includes:
+- Splitting the data into training and testing sets.
+- Training the BiLSTM model on the training data.
+- Evaluating the model on the testing data and providing classification reports for both POS and NER tags.
+
+
+
+### Build Model 
+Defines the BiLSTM model for POS and NER tagging.
+```python
     def build_model(self):
         print("Building model...")
         input_word = Input(shape=(self.max_len,))
@@ -84,9 +149,13 @@ class NER_POS_Trainer:
 
         self.model = Model(inputs=input_word, outputs=[pos_output, ner_output])
         self.model.compile(optimizer="adam",
-                           loss={'pos_output': 'categorical_crossentropy', 'ner_output': 'categorical_crossentropy'},
-                           metrics={'pos_output': 'accuracy', 'ner_output': 'accuracy'})
+                            loss={'pos_output': 'categorical_crossentropy', 'ner_output': 'categorical_crossentropy'},
+                            metrics={'pos_output': 'accuracy', 'ner_output': 'accuracy'})
+```
 
+### Train Model 
+Splits data into training and testing sets and trains the model.
+```python
     def train_model(self, X, y_pos, y_ner):
         print("Training model...")
         x_train, x_test, y_pos_train, y_pos_test, y_ner_train, y_ner_test = train_test_split(
@@ -102,7 +171,11 @@ class NER_POS_Trainer:
         )
 
         self.evaluate_model(x_test, y_pos_test, y_ner_test)
+```
 
+### Evaluate Model 
+Evaluates the model's performance using classification reports.
+```python
     def evaluate_model(self, x_test, y_pos_test, y_ner_test):
         print("Evaluating model...")
         y_pos_pred, y_ner_pred = self.model.predict(x_test)
@@ -124,22 +197,24 @@ class NER_POS_Trainer:
             labels=list(self.ner2idx.values())
         )
         print(f"NER Tagging Classification Report:\n {ner_classification_report}")
+```
 
+### Save Model 
+Saves the trained model to a specified path.
+```python
     def save_model(self, model_path):
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         self.model.save(model_path)
+```
 
-    def run(self, model_path):
-        data = self.load_and_preprocess_data()
-        sentences = self.get_sentences(data)
-        X, y_pos, y_ner = self.prepare_data(sentences)
-        self.build_model()
-        self.train_model(X, y_pos, y_ner)
-        self.save_model(model_path)
-
-
-if __name__ == "__main__":
-    model_path = env.str('MODEL_PATH', None)
-    data_path = env.str('DATA_PATH', None)
-    trainer = NER_POS_Trainer(data_path= data_path, max_len=50, batch_size=64, epochs=100)
-    trainer.run(model_path=model_path)
+### Run 
+Runs the complete pipeline: load data, preprocess, build model, train, and save model.
+```python
+def run(self, model_path):
+    data = self.load_and_preprocess_data()
+    sentences = self.get_sentences(data)
+    X, y_pos, y_ner = self.prepare_data(sentences)
+    self.build_model()
+    self.train_model(X, y_pos, y_ner)
+    self.save_model(model_path)
+```

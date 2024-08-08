@@ -44,6 +44,25 @@ python test.py
 ```
 ***Note: Change the input text first.***
 
+# Prepare ONNX model and inference
+## Prepare ONNX model
+
+```shell
+make prepare-onnx
+```
+***or***
+```shell
+python prepare_onnx_model.py
+```
+## Inference using ONNX model
+```shell
+make infer-onnx
+```
+***or***
+```shell
+python inference_onnx_model.py
+```
+
 # Run the inference API developed using FastAPI
 
 ## 1. Run the API

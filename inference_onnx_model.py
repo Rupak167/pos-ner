@@ -2,13 +2,13 @@ import os
 import re
 import numpy as np
 import pandas as pd
-from tensorflow.keras.models import load_model
+import onnxruntime as ort
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from environs import Env
 
 class NER_POS_Inference:
     def __init__(self, model_path, data_path, max_len):
-        self.model = load_model(model_path)
+        self.session = ort.InferenceSession(model_path)
         self.max_len = max_len
         self.data_path = data_path
         self.word2idx, self.pos2idx, self.ner2idx = self.load_dictionaries()
@@ -17,8 +17,12 @@ class NER_POS_Inference:
 
     def predict(self, sentence):
         processed_sentence = self.preprocess_sentence(sentence)
-        pos_pred, ner_pred = self.model.predict(processed_sentence)
+        ort_inputs = {self.session.get_inputs()[0].name: processed_sentence.astype(np.float32)}
+        ort_outs = self.session.run(None, ort_inputs)
         
+        pos_pred = ort_outs[0]
+        ner_pred = ort_outs[1]
+
         pos_pred_labels = np.argmax(pos_pred, axis=-1).flatten()
         ner_pred_labels = np.argmax(ner_pred, axis=-1).flatten()
         
@@ -27,7 +31,6 @@ class NER_POS_Inference:
         print(f"POS Tags: {pos_tags}")
         print(f"NER Tags: {ner_tags}")
         return pos_tags[:len(sentence.split())], ner_tags[:len(sentence.split())]
-
 
     def clean_token(self, token):
         unwanted_chars = r"[()'\",|?]"
@@ -39,8 +42,7 @@ class NER_POS_Inference:
         word_indices = [self.word2idx.get(word, 0) for word in words]
         padded_sequence = pad_sequences([word_indices], maxlen=self.max_len, padding='post', value=len(self.word2idx) - 1)
         return padded_sequence
-    
-    
+
     def load_dictionaries(self):
         column_names = ['token', 'pos_tag', 'ner_tag', 'sentence_id']
         data = pd.read_csv(self.data_path, delimiter='\t', quoting=3, names=column_names, encoding='utf-8')
@@ -66,12 +68,12 @@ class NER_POS_Inference:
 if __name__ == "__main__":
     env = Env()
     env.read_env()
-    model_path = env.str('MODEL_PATH', None)
+    model_path = env.str('ONNX_MODEL_PATH', None)
     data_path = env.str('DATA_PATH', None)
     
     inference = NER_POS_Inference(model_path=model_path, data_path=data_path, max_len=50)
     
-    sentence = "আপনার ইনপুট বাক্য এখানে" 
+    sentence = "আপনার ইনপুট বাক্য এখানে"
 
     pos_tags, ner_tags = inference.predict(sentence)
 

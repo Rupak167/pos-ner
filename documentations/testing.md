@@ -1,11 +1,9 @@
-import os
-import re
-import numpy as np
-import pandas as pd
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from environs import Env
-
+# Inference Script
+## NER_POS_Inference Class
+This class handles loading a trained model and making predictions on new sentences.
+### Initialization 
+Loads the trained model and dictionaries for token, POS tag, and NER tag indices.
+```python
 class NER_POS_Inference:
     def __init__(self, model_path, data_path, max_len):
         self.model = load_model(model_path)
@@ -14,7 +12,11 @@ class NER_POS_Inference:
         self.word2idx, self.pos2idx, self.ner2idx = self.load_dictionaries()
         self.idx2pos = {v: k for k, v in self.pos2idx.items()}
         self.idx2ner = {v: k for k, v in self.ner2idx.items()}
+```
 
+### Predict 
+Preprocesses the input sentence, makes predictions, and maps indices to tags.
+```python
     def predict(self, sentence):
         processed_sentence = self.preprocess_sentence(sentence)
         pos_pred, ner_pred = self.model.predict(processed_sentence)
@@ -26,22 +28,32 @@ class NER_POS_Inference:
         ner_tags = [self.idx2ner[idx] for idx in ner_pred_labels if idx in self.idx2ner]
         print(f"POS Tags: {pos_tags}")
         print(f"NER Tags: {ner_tags}")
-        return pos_tags[:len(sentence.split())], ner_tags[:len(sentence.split())]
 
+```
 
-    def clean_token(self, token):
+### Clean Token 
+Removes unwanted characters from tokens.
+```python
+   def clean_token(self, token):
         unwanted_chars = r"[()'\",|?]"
         return re.sub(unwanted_chars, '', token)
-        
-    def preprocess_sentence(self, sentence):
+```
+
+### Preprocess Sentence 
+Converts a sentence into a sequence of token indices and pads it.
+```python
+   def preprocess_sentence(self, sentence):
         words = sentence.strip().split()
         words = [self.clean_token(word) for word in words]
         word_indices = [self.word2idx.get(word, 0) for word in words]
         padded_sequence = pad_sequences([word_indices], maxlen=self.max_len, padding='post', value=len(self.word2idx) - 1)
         return padded_sequence
-    
-    
-    def load_dictionaries(self):
+```
+
+### Load Dictionaries 
+Loads the token, POS tag, and NER tag dictionaries from the training data.
+```python
+   def load_dictionaries(self):
         column_names = ['token', 'pos_tag', 'ner_tag', 'sentence_id']
         data = pd.read_csv(self.data_path, delimiter='\t', quoting=3, names=column_names, encoding='utf-8')
         
@@ -62,7 +74,10 @@ class NER_POS_Inference:
         ner2idx = {n: i for i, n in enumerate(ner_tags)}
 
         return word2idx, pos2idx, ner2idx
-
+```
+### Running the Inference Script
+The inference script loads the trained model, preprocesses an input sentence, and prints the predicted POS and NER tags.
+```python
 if __name__ == "__main__":
     env = Env()
     env.read_env()
@@ -77,3 +92,4 @@ if __name__ == "__main__":
 
     print("POS Tags:", pos_tags)
     print("NER Tags:", ner_tags)
+```
