@@ -106,3 +106,15 @@ docker compose up --build
 
 ***Use the same process to make api request***
 
+
+## Documentation Overview
+[Training Process:](documentations/data_preparation_and_training.md) Detailed guide on how to prepare data and train the POS and NER model.
+
+[Testing the Model:](documentations/test.md) Instructions for testing the model and evaluating its performance.
+
+[Converting to ONNX Format:](documentations/prepare_onnx_model.md)
+ Steps to convert the trained model to ONNX format for optimized deployment.
+
+[Testing the ONNX Model:](documentations/ONNX_testing.md) Guidelines for testing the model after converting it to ONNX.
+
+[FastAPI Implementation:](documentations/fastapi.md) Documentation on how to set up and use the FastAPI interface for the model.

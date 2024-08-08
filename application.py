@@ -1,6 +1,3 @@
-from base64 import b64decode
-from io import BytesIO
-
 from environs import Env
 from fastapi import FastAPI, status
 

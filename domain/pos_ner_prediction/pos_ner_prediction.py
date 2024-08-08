@@ -54,7 +54,6 @@ class NER_POS_Prediction:
                     NER_Tag=ner
                 )
             )
-        logger.info(f"Result in the prediction side: {result}")
         return result
 
     def load_dictionaries(self):
