@@ -24,8 +24,6 @@ class NER_POS_Inference:
         
         pos_tags = [self.idx2pos[idx] for idx in pos_pred_labels if idx in self.idx2pos]
         ner_tags = [self.idx2ner[idx] for idx in ner_pred_labels if idx in self.idx2ner]
-        print(f"POS Tags: {pos_tags}")
-        print(f"NER Tags: {ner_tags}")
         return pos_tags[:len(sentence.split())], ner_tags[:len(sentence.split())]
 
 
@@ -75,5 +73,5 @@ if __name__ == "__main__":
 
     pos_tags, ner_tags = inference.predict(sentence)
 
-    print("POS Tags:", pos_tags)
-    print("NER Tags:", ner_tags)
+    print("Predicted POS Tags:", pos_tags)
+    print("Predicted NER Tags:", ner_tags)
