@@ -164,7 +164,7 @@ Splits data into training and testing sets and trains the model.
 
         self.model.fit(
             x_train, {'pos_output': np.array(y_pos_train), 'ner_output': np.array(y_ner_train)},
-            validation_split=0.2,
+            validation_data=(x_test, {'pos_output': np.array(y_pos_test), 'ner_output': np.array(y_ner_test)}),
             batch_size=self.batch_size,
             epochs=self.epochs,
             verbose=1
