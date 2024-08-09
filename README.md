@@ -117,4 +117,4 @@ docker compose up --build
 
 [Testing the ONNX Model:](documentations/ONNX_testing.md) Guidelines for testing the model after converting it to ONNX.
 
-[FastAPI Implementation:](documentations/fastapi.md) Documentation on how to set up and use the FastAPI interface for the model.
+[FastAPI Implementation:](documentations/fastapi.md) Documentation on the FastAPI interface for the model inference.
